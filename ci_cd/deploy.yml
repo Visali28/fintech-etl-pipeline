@@ -1,0 +1,21 @@
+name: ETL Pipeline CI/CD
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lint
+        run: pip install flake8 && flake8 lambda_src/
+      - name: Unit Tests
+        run: pip install pytest && pytest tests/
+      - name: Build Package
+        run: zip -r etl.zip lambda_src/
+      - name: Deploy
+        run: |
+          pip install terraform awscli
+          terraform -chdir=iac init
+          terraform -chdir=iac apply -auto-approve
+
